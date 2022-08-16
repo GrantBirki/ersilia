@@ -37,7 +37,3 @@ except Exception as E:
 
     if query_yes_no("Would you like to access the log?"):
         # execute cli logic for [y/n] query and write log to a file
-
-
-
-

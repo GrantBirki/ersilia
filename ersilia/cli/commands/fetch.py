@@ -6,9 +6,8 @@ from . import ersilia_cli
 from .. import echo
 from ...hub.fetch.fetch import ModelFetcher
 from ... import ModelBase
-from ...utils.exceptions.exceptions import ErsiliaError
-from ...utils.exceptions.fetch_exceptions import FetchErsiliaError
-
+from ...utils.cli_query import query_yes_no
+from ...utils.exceptions.email_reporting import send_exception_report_email
 
 def fetch_cmd():
     """Create fetch commmand"""
@@ -47,8 +46,22 @@ def fetch_cmd():
             _fetch(mf, model_id)
             echo(":thumbs_up: Model {0} fetched successfully!".format(model_id), fg="green")
 
-        except ErsiliaError as E:
-            raise E
         except Exception as E:
-            # TODO: ensure that the exception is properly logged here to save stacktrace
-            raise FetchErsiliaError(str(model))
+            text = ":triangular_flag: Something went wrong with Ersilia...\n\n"
+            text += "{}\n\n".format(self.__class__.__name__)
+            echo(text)
+            echo("Error message:\n")
+            echo(":prohibited: " + str(E), fg="red")
+            text = "If this error message is not helpful, open an issue at:\n"
+            text += " - https://github.com/ersilia-os/ersilia\n"
+            text += "Or feel free to reach out to us at:\n"
+            text += " - hello[at]ersilia.io\n\n"
+            text += "If you haven't, try to run your command in verbose mode (-v in the CLI)\n\n"
+            echo(text)
+        
+            if query_yes_no("Would you like to report this error to Ersilia?"):
+                send_exception_report_email(E)
+
+            if query_yes_no("Would you like to access the log?"):
+                print("No log info")
+                # TODO: execute cli logic for [y/n] query and write log to a file

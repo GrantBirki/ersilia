@@ -3,11 +3,11 @@ from datetime import datetime
 
 smtp_server = "smtp.gmail.com"
 port = 587  # For starttls
-sender_email = "ersilia_errors@gmail.com"
-password = '*******' # insecure: the password will be visible from the code. Is this permissible?
+sender_email = "ersilia.errors@gmail.com"
+password = 'testing!!' # insecure: the password will be visible from the code. Is this permissible?
 
-sender_email = "ersilia_errors@gmail.com"
-receiver_email = "ersilia_errors@gmail.com"
+sender_email = "ersilia.errors@gmail.com"
+receiver_email = "ersilia.errors@gmail.com"
 
 def send_exception_report_email(E:Exception, log_text:str = ""):
     # get date/time info for message
