@@ -5,6 +5,8 @@ from . import ersilia_cli
 from .. import echo
 from ...io.input import ExampleGenerator
 from ... import ModelBase
+from ...utils.exceptions.exceptions import ErsiliaError
+from ...utils.exceptions.example_exceptions import ExampleErsiliaError
 
 
 def example_cmd():
@@ -20,9 +22,16 @@ def example_cmd():
     @click.option("--file_name", "-f", default=None, type=click.STRING)
     @click.option("--simple/--complete", "-s/-c", default=True)
     def example(model, n_samples, file_name, simple):
-        model_id = ModelBase(model).model_id
-        eg = ExampleGenerator(model_id)
-        if file_name is None:
-            echo(json.dumps(eg.example(n_samples, file_name, simple), indent=4))
-        else:
-            eg.example(n_samples, file_name, simple)
+        try:
+            model_id = ModelBase(model).model_id
+            eg = ExampleGenerator(model_id)
+            if file_name is None:
+                echo(json.dumps(eg.example(n_samples, file_name, simple), indent=4))
+            else:
+                eg.example(n_samples, file_name, simple)
+ 
+        except ErsiliaError as E:
+            raise E
+        except Exception as E:
+            # TODO: ensure that the exception is properly logged here to save stacktrace
+            raise ExampleErsiliaError

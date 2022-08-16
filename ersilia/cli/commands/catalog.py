@@ -5,6 +5,8 @@ from . import ersilia_cli
 from ...hub.content.catalog import ModelCatalog
 from ...hub.content.search import ModelSearcher
 from ...hub.content.table_update import table
+from ...utils.exceptions.exceptions import ErsiliaError
+from ...utils.exceptions.catalog_exceptions import CatalogErsiliaError
 
 
 def catalog_cmd():
@@ -41,26 +43,32 @@ def catalog_cmd():
     def catalog(
         local=False, search=None, text=None, mode=None, next=False, previous=False
     ):
+        try:
+            mc = ModelCatalog()
+            if not (local or text or mode):
+                catalog = mc.hub()
+                if not (next or previous):
+                    catalog = table(catalog).initialise()
 
-        mc = ModelCatalog()
-        if not (local or text or mode):
-            catalog = mc.hub()
-            if not (next or previous):
-                catalog = table(catalog).initialise()
+                if next:
+                    catalog = table(catalog).next_table()
 
-            if next:
-                catalog = table(catalog).next_table()
+                if previous:
+                    catalog = table(catalog).prev_table()
 
-            if previous:
-                catalog = table(catalog).prev_table()
+            if local:
+                catalog = mc.local()
 
-        if local:
-            catalog = mc.local()
+            if text:
+                catalog = mc.hub()
+                catalog = ModelSearcher(catalog).search_text(text)
+            if mode:
+                catalog = mc.hub()
+                catalog = ModelSearcher(catalog).search_mode(mode)
+            click.echo(catalog)
 
-        if text:
-            catalog = mc.hub()
-            catalog = ModelSearcher(catalog).search_text(text)
-        if mode:
-            catalog = mc.hub()
-            catalog = ModelSearcher(catalog).search_mode(mode)
-        click.echo(catalog)
+        except ErsiliaError as E:
+            raise E
+        except Exception as E:
+            # TODO: ensure that the exception is properly logged here to save stacktrace
+            raise CatalogErsiliaError

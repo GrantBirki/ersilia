@@ -5,6 +5,8 @@ from . import ersilia_cli
 from .. import echo
 from ...hub.delete.delete import ModelFullDeleter
 from ... import ModelBase
+from ...utils.exceptions.exceptions import ErsiliaError
+from ...utils.exceptions.delete_exceptions import DeleteErsiliaError
 
 
 def delete_cmd():
@@ -21,19 +23,26 @@ def delete_cmd():
     )
     @click.argument("model", type=click.STRING)
     def delete(model):
-        model_id = ModelBase(model).model_id
-        md = ModelFullDeleter()
-        if md.needs_delete(model_id):
-            echo("Deleting model {0}".format(model_id))
-            _delete(md, model_id)
-            echo(
-                ":collision: Model {0} deleted successfully!".format(model_id),
-                fg="green",
-            )
-        else:
-            echo(
-                ":person_tipping_hand: Model {0} is not available locally. No delete is necessary".format(
-                    model_id
-                ),
-                fg="yellow",
-            )
+        try:
+            model_id = ModelBase(model).model_id
+            md = ModelFullDeleter()
+            if md.needs_delete(model_id):
+                echo("Deleting model {0}".format(model_id))
+                _delete(md, model_id)
+                echo(
+                    ":collision: Model {0} deleted successfully!".format(model_id),
+                    fg="green",
+                )
+            else:
+                echo(
+                    ":person_tipping_hand: Model {0} is not available locally. No delete is necessary".format(
+                        model_id
+                    ),
+                    fg="yellow",
+                )
+
+        except ErsiliaError as E:
+            raise E
+        except Exception as E:
+            # TODO: ensure that the exception is properly logged here to save stacktrace
+            raise DeleteErsiliaError

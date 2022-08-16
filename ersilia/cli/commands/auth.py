@@ -1,4 +1,6 @@
 from . import ersilia_cli
+from ...utils.exceptions.exceptions import ErsiliaError
+from ...utils.exceptions.auth_exceptions import AuthErsiliaError
 
 
 def auth_cmd():

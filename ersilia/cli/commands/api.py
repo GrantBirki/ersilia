@@ -6,6 +6,8 @@ from . import ersilia_cli
 from .. import echo
 from ... import ErsiliaModel
 from ...core.session import Session
+from ...utils.exceptions.exceptions import ErsiliaError
+from ...utils.exceptions.api_exceptions import ApiErsiliaError
 
 
 def api_cmd():
@@ -23,26 +25,33 @@ def api_cmd():
         "-b", "--batch_size", "batch_size", required=False, default=100, type=click.INT
     )
     def api(api_name, input, output, batch_size):
-        session = Session(config_json=None)
-        model_id = session.current_model_id()
-        service_class = session.current_service_class()
-        if model_id is None:
-            echo(
-                "No model seems to be served. Please run 'ersilia serve ...' before.",
-                fg="red",
-            )
-            return
-        mdl = ErsiliaModel(model_id, service_class=service_class, config_json=None)
-        result = mdl.api(
-            api_name=api_name, input=input, output=output, batch_size=batch_size
-        )
-        if isinstance(result, types.GeneratorType):
-            for result in mdl.api(
+        try: 
+            session = Session(config_json=None)
+            model_id = session.current_model_id()
+            service_class = session.current_service_class()
+            if model_id is None:
+                echo(
+                    "No model seems to be served. Please run 'ersilia serve ...' before.",
+                    fg="red",
+                )
+                return
+            mdl = ErsiliaModel(model_id, service_class=service_class, config_json=None)
+            result = mdl.api(
                 api_name=api_name, input=input, output=output, batch_size=batch_size
-            ):
-                if result is not None:
-                    echo(json.dumps(result, indent=4))
-                else:
-                    echo("Something went wrong", fg="red")
-        else:
-            echo(result)
+            )
+            if isinstance(result, types.GeneratorType):
+                for result in mdl.api(
+                    api_name=api_name, input=input, output=output, batch_size=batch_size
+                ):
+                    if result is not None:
+                        echo(json.dumps(result, indent=4))
+                    else:
+                        echo("Something went wrong", fg="red")
+            else:
+                echo(result)
+
+        except ErsiliaError as E:
+            raise E
+        except Exception as E:
+            # TODO: ensure that the exception is properly logged here to save stacktrace
+            raise ApiErsiliaError

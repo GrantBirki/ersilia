@@ -2,18 +2,27 @@ from . import ersilia_cli
 from .. import echo
 from ... import ErsiliaModel
 from ...core.session import Session
+from ...utils.exceptions.exceptions import ErsiliaError
+from ...utils.exceptions.close_exceptions import CloseErsiliaError
 
 
 def close_cmd():
     # Example usage: ersilia close {MODEL}
     @ersilia_cli.command(short_help="Close model", help="Close model")
     def close():
-        session = Session(config_json=None)
-        model_id = session.current_model_id()
-        service_class = session.current_service_class()
-        if model_id is None:
-            echo("No model was served")
-            return
-        mdl = ErsiliaModel(model_id, service_class=service_class)
-        mdl.close()
-        echo(":no_entry: Model {0} closed".format(mdl.model_id), fg="green")
+        try:
+            session = Session(config_json=None)
+            model_id = session.current_model_id()
+            service_class = session.current_service_class()
+            if model_id is None:
+                echo("No model was served")
+                return
+            mdl = ErsiliaModel(model_id, service_class=service_class)
+            mdl.close()
+            echo(":no_entry: Model {0} closed".format(mdl.model_id), fg="green")
+
+        except ErsiliaError as E:
+            raise E
+        except Exception as E:
+            # TODO: ensure that the exception is properly logged here to save stacktrace
+            raise CloseErsiliaError

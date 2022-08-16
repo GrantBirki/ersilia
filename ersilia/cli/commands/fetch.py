@@ -6,6 +6,8 @@ from . import ersilia_cli
 from .. import echo
 from ...hub.fetch.fetch import ModelFetcher
 from ... import ModelBase
+from ...utils.exceptions.exceptions import ErsiliaError
+from ...utils.exceptions.fetch_exceptions import FetchErsiliaError
 
 
 def fetch_cmd():
@@ -25,21 +27,28 @@ def fetch_cmd():
     @click.option("--mode", "-m", default=None, type=click.STRING)
     @click.option("--dockerize/--not-dockerize", default=False)
     def fetch(model, mode, dockerize):
-        mdl = ModelBase(model)
-        model_id = mdl.model_id
-        # TODO: Move the commented code
-        # url = "https://github.com/ersilia-os/{0}.git/info/lfs".format(model_id)
-        # cmd = "echo " + url + "| perl -ne 'print $1 if m!([^/]+/[^/]+?)(?:\.git)?$!' | xargs -I{} curl -s -k https://api.github.com/repos/'{}' | grep size"
-        # echo(
-        #    "The disk storage of this model in KB is"
-        # )
-        # print (
-        #    os.system(cmd)
-        # )
-        echo(
-            ":down_arrow:  Fetching model {0}: {1}".format(model_id, mdl.slug),
-            fg="blue",
-        )
-        mf = ModelFetcher(mode=mode, dockerize=dockerize)
-        _fetch(mf, model_id)
-        echo(":thumbs_up: Model {0} fetched successfully!".format(model_id), fg="green")
+        try:
+            mdl = ModelBase(model)
+            model_id = mdl.model_id
+            # TODO: Move the commented code
+            # url = "https://github.com/ersilia-os/{0}.git/info/lfs".format(model_id)
+            # cmd = "echo " + url + "| perl -ne 'print $1 if m!([^/]+/[^/]+?)(?:\.git)?$!' | xargs -I{} curl -s -k https://api.github.com/repos/'{}' | grep size"
+            # echo(
+            #    "The disk storage of this model in KB is"
+            # )
+            # print (
+            #    os.system(cmd)
+            # )
+            echo(
+                ":down_arrow:  Fetching model {0}: {1}".format(model_id, mdl.slug),
+                fg="blue",
+            )
+            mf = ModelFetcher(mode=mode, dockerize=dockerize)
+            _fetch(mf, model_id)
+            echo(":thumbs_up: Model {0} fetched successfully!".format(model_id), fg="green")
+
+        except ErsiliaError as E:
+            raise E
+        except Exception as E:
+            # TODO: ensure that the exception is properly logged here to save stacktrace
+            raise FetchErsiliaError
