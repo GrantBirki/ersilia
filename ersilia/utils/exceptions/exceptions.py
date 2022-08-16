@@ -26,7 +26,7 @@ class MissingDependencyError(ErsiliaError):
 class InvalidModelIdentifierError(ErsiliaError):
     def __init__(self, model):
         self.model = model
-        self.message = "Could not identifiy model identifier or slug {0}:".format(
+        self.message = "Could not identify model identifier or slug {0}:".format(
             self.model
         )
         self.hints = "Please check that {0} exists in the Ersilia Model Hub:\n - https://ersilia.io/model-hub (for approved models)\n - https://airtable.com/shrUcrUnd7jB9ChZV (for approved and in preparation models)".format(

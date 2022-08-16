@@ -6,7 +6,7 @@ from .. import ErsiliaBase
 from ..hub.content.slug import Slug
 from ..hub.fetch import STATUS_FILE, DONE_TAG
 
-from ..utils.exceptions import InvalidModelIdentifierError
+from ..utils.exceptions.exceptions import InvalidModelIdentifierError
 
 
 class ModelBase(ErsiliaBase):

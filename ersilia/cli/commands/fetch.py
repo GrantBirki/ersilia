@@ -51,4 +51,4 @@ def fetch_cmd():
             raise E
         except Exception as E:
             # TODO: ensure that the exception is properly logged here to save stacktrace
-            raise FetchErsiliaError
+            raise FetchErsiliaError(str(model))
