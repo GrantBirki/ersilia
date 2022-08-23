@@ -11,7 +11,7 @@ from .... import ErsiliaModel
 from ....io.input import ExampleGenerator
 from ....io.pure import PureDataTyper
 from ....default import API_SCHEMA_FILE, MODEL_SIZE_FILE
-from ....utils.exceptions import EmptyOutputError
+from ....utils.exceptions.exceptions import EmptyOutputError
 
 
 N = 3
