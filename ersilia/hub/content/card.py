@@ -8,6 +8,11 @@ from ... import ErsiliaBase
 from ...utils.terminal import run_command
 from ...auth.auth import Auth
 
+from .. import echo
+from ...utils.cli_query import query_yes_no
+from ...utils.exceptions.email_reporting import send_exception_report_email
+
+
 try:
     from isaura.core.hdf5 import Hdf5Explorer
 except:
@@ -154,14 +159,35 @@ class LakeCard(ErsiliaBase):
         ErsiliaBase.__init__(self, config_json=config_json)
 
     def get(self, model_id, as_json=False):
-        if Hdf5Explorer is None:
-            self.logger.debug("No lake found")
-            return None
-        card = Hdf5Explorer(model_id=model_id).info()
-        if as_json:
-            return json.dumps(card, indent=4)
-        else:
-            return card
+        try:
+            if Hdf5Explorer is None:
+                self.logger.debug("No lake found")
+                return None
+            card = Hdf5Explorer(model_id=model_id).info()
+            if as_json:
+                return json.dumps(card, indent=4)
+            else:
+                return card
+
+        except Exception as E:
+            text = ":triangular_flag: Something went wrong with Ersilia...\n\n"
+            text += "{}\n\n".format(self.__class__.__name__)
+            echo(text)
+            echo("Error message:\n")
+            echo(":prohibited: " + str(E), fg="red")
+            text = "If this error message is not helpful, open an issue at:\n"
+            text += " - https://github.com/ersilia-os/ersilia\n"
+            text += "Or feel free to reach out to us at:\n"
+            text += " - hello[at]ersilia.io\n\n"
+            text += "If you haven't, try to run your command in verbose mode (-v in the CLI)\n\n"
+            echo(text)
+        
+            if query_yes_no("Would you like to report this error to Ersilia?"):
+                send_exception_report_email(E)
+
+            # # TODO: add access to log information
+            # if query_yes_no("Would you like to access the log?"):
+            #     print("No log info")
 
 
 class ModelCard(object):
@@ -182,10 +208,32 @@ class ModelCard(object):
             return card
 
     def get(self, model_id, as_json=False):
-        card = self._get(model_id)
-        if card is None:
-            return
-        if as_json:
-            return json.dumps(card, indent=4)
-        else:
-            return card
+        try:
+
+            card = self._get(model_id)
+            if card is None:
+                return
+            if as_json:
+                return json.dumps(card, indent=4)
+            else:
+                return card
+
+        except Exception as E:
+            text = ":triangular_flag: Something went wrong with Ersilia...\n\n"
+            text += "{}\n\n".format(self.__class__.__name__)
+            echo(text)
+            echo("Error message:\n")
+            echo(":prohibited: " + str(E), fg="red")
+            text = "If this error message is not helpful, open an issue at:\n"
+            text += " - https://github.com/ersilia-os/ersilia\n"
+            text += "Or feel free to reach out to us at:\n"
+            text += " - hello[at]ersilia.io\n\n"
+            text += "If you haven't, try to run your command in verbose mode (-v in the CLI)\n\n"
+            echo(text)
+        
+            if query_yes_no("Would you like to report this error to Ersilia?"):
+                send_exception_report_email(E)
+
+            # # TODO: add access to log information
+            # if query_yes_no("Would you like to access the log?"):
+            #     print("No log info")

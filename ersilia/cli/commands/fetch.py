@@ -5,6 +5,7 @@ import os
 from . import ersilia_cli
 from ...hub.fetch.fetch import ModelFetcher
 from ... import ModelBase
+
 from .. import echo
 from ...utils.cli_query import query_yes_no
 from ...utils.exceptions.email_reporting import send_exception_report_email
