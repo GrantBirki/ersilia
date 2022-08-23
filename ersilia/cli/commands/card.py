@@ -9,6 +9,7 @@ from ... import ModelBase
 from ...utils.cli_query import query_yes_no
 from ...utils.exceptions.email_reporting import send_exception_report_email
 
+from ...utils.exceptions.exceptions import ErsiliaError
 
 def card_cmd():
     """Creates card command"""
@@ -28,8 +29,16 @@ def card_cmd():
         default=False,
         help="Show the properties of the data lake",
     )
-    def card(model, schema, lake):
-        try:
+    @click.option(
+        "-x",
+        "--trigger",
+        is_flag=True,
+        default=False,
+        help="Trigger exception",
+    )
+    def card(model, schema, lake, trigger):
+        # try:
+        if not trigger:
             mdl = ModelBase(model)
             model_id = mdl.model_id
             if schema:
@@ -43,9 +52,12 @@ def card_cmd():
             ac = ApiSchema(model_id, config_json=None)
             click.echo(json.dumps(ac.get(), indent=4))
 
-        except Exception as E:
+        else:
+        # except Exception as E:
+            E = ErsiliaError
             text = ":triangular_flag: Something went wrong with Ersilia...\n\n"
-            text += "{}\n\n".format(self.__class__.__name__)
+            # text += "{}\n\n".format(self.__class__.__name__)
+            text += "{}\n\n".format(E.__name__)
             echo(text)
             echo("Error message:\n")
             echo(":prohibited: " + str(E), fg="red")
