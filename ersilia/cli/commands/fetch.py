@@ -3,9 +3,9 @@ import time
 
 import os
 from . import ersilia_cli
-from .. import echo
 from ...hub.fetch.fetch import ModelFetcher
 from ... import ModelBase
+from .. import echo
 from ...utils.cli_query import query_yes_no
 from ...utils.exceptions.email_reporting import send_exception_report_email
 
@@ -62,6 +62,6 @@ def fetch_cmd():
             if query_yes_no("Would you like to report this error to Ersilia?"):
                 send_exception_report_email(E)
 
-            if query_yes_no("Would you like to access the log?"):
-                print("No log info")
-                # TODO: execute cli logic for [y/n] query and write log to a file
+            # # TODO: add access to log information
+            # if query_yes_no("Would you like to access the log?"):
+            #     print("No log info")
