@@ -1,7 +1,6 @@
 """See available models in the Ersilia Model Hub"""
 
 import subprocess
-from tkinter import E
 import requests
 import os
 from .card import ModelCard
@@ -11,7 +10,7 @@ from ...auth.auth import Auth
 from ...default import GITHUB_ORG
 from ... import logger
 
-from ...utils.exceptions.throw_ersilia_exception import throw_ersilia_exception
+from ersilia.utils.exceptions import throw_ersilia_exception
 
 try:
     import webbrowser
