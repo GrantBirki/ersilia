@@ -1,7 +1,7 @@
 import requests
 import json
 import subprocess
-
+from datetime import datetime
 
 # REPO_OWNER = 'ersilia-os'
 # REPO_NAME = 'ersilia'
@@ -9,7 +9,7 @@ REPO_OWNER = "azycn"
 REPO_NAME = "alice.github.io"
 AUTH_TOKEN = None
 
-def send_exception_issue(E: Exception):
+def send_exception_issue(E: Exception, lastinput: String):
 
     subprocess.run(['gh', 'auth', 'login']) # user login
     auth_out = subprocess.run(['gh', 'auth', 'status', '-t'], capture_output=True) # retrieve user's auth token
@@ -57,9 +57,18 @@ def send_exception_issue(E: Exception):
     # Create our issue and headers to authenticate/format
     headers = {'Authorization': 'token %s' % AUTH_TOKEN,
                'Accept': 'application/vnd.github+json'}
+    
+
+    # Building the message for the body of the GitHub Issue
+    datetime_str = "Date and time of issue: " + datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    exception_str = "Exception message: " + str(E)
+    lastinput_str = "Last Input: " + (lastinput if lastinput not == "" else "not provided.")
+    # include log information here
+    body_message = datetime_str + "\n" + exception_str + "\n" + lastinput_str 
+    
     issue = {
-        'title': 'New issue', # better title of issue?
-        'body': str(E),
+        'title': 'New issue: ' + datetime_str, 
+        'body': body_message,
         'labels': ["Reported Issue"]
     }
 

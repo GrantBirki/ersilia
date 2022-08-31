@@ -3,7 +3,6 @@ import time
 
 import os
 
-from ersilia.utils.exceptions.throw_ersilia_exception import throw_exception
 from . import ersilia_cli
 from ...hub.fetch.fetch import ModelFetcher
 from ... import ModelBase

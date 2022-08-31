@@ -8,7 +8,7 @@ from ... import ErsiliaBase
 from ...utils.terminal import run_command
 from ...auth.auth import Auth
 
-from ...utils.exceptions.throw_ersilia_exception import throw_exception
+from ...utils.exceptions.throw_ersilia_exception import throw_ersilia_exception
 
 
 try:
@@ -97,11 +97,10 @@ class ReadmeCard(ErsiliaBase):
         }
         return results
 
+    @throw_ersilia_exception
     def get(self, model_id):
-        try:
-            return self.parse(model_id)
-        except Exception as E:
-            throw_exception(E)
+        return self.parse(model_id)
+        
 
 
 class AirtableCard(ErsiliaBase):
@@ -136,48 +135,43 @@ class AirtableCard(ErsiliaBase):
     def find_card_by_mode(self, mode):
         return self._find_card(mode, "Mode")
 
+    @throw_ersilia_exception
     def get(self, model_id):
-        try:
-            return self.find_card_by_model_id(model_id)
-        except Exception as E:
-            throw_exception(E)
+        return self.find_card_by_model_id(model_id)
+       
 
 class LocalCard(ErsiliaBase):
     def __init__(self, config_json):
         ErsiliaBase.__init__(self, config_json=config_json)
 
+    @throw_ersilia_exception
     def get(self, model_id):
-        try:
-            model_path = self._model_path(model_id)
-            card_path = os.path.join(model_path, CARD_FILE)
-            if os.path.exists(card_path):
-                with open(card_path, "r") as f:
-                    card = json.load(f)
-                return card
-            else:
-                return None
-        
-        except Exception as E:
-            throw_exception(E)
+        model_path = self._model_path(model_id)
+        card_path = os.path.join(model_path, CARD_FILE)
+        if os.path.exists(card_path):
+            with open(card_path, "r") as f:
+                card = json.load(f)
+            return card
+        else:
+            return None
+
 
 
 class LakeCard(ErsiliaBase):
     def __init__(self, config_json=None):
         ErsiliaBase.__init__(self, config_json=config_json)
 
+    @throw_ersilia_exception
     def get(self, model_id, as_json=False):
-        try:
-            if Hdf5Explorer is None:
-                self.logger.debug("No lake found")
-                return None
-            card = Hdf5Explorer(model_id=model_id).info()
-            if as_json:
-                return json.dumps(card, indent=4)
-            else:
-                return card
+        if Hdf5Explorer is None:
+            self.logger.debug("No lake found")
+            return None
+        card = Hdf5Explorer(model_id=model_id).info()
+        if as_json:
+            return json.dumps(card, indent=4)
+        else:
+            return card
 
-        except Exception as E:
-            throw_exception(E)
 
 
 class ModelCard(object):
@@ -197,16 +191,12 @@ class ModelCard(object):
         if card is not None:
             return card
 
+    @throw_ersilia_exception
     def get(self, model_id, as_json=False):
-        try:
-
-            card = self._get(model_id)
-            if card is None:
-                return
-            if as_json:
-                return json.dumps(card, indent=4)
-            else:
-                return card
-
-        except Exception as E:
-            throw_exception(E)
+        card = self._get(model_id)
+        if card is None:
+            return
+        if as_json:
+            return json.dumps(card, indent=4)
+        else:
+            return card

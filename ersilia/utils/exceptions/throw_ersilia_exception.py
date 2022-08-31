@@ -1,6 +1,7 @@
-from .. import echo
+from ersilia.cli import echo
 from ...utils.cli_query import query_yes_no
 from ...utils.exceptions.issue_reporting import send_exception_issue
+import sys
 
 def throw_ersilia_exception(func):
     def inner_function(*args, **kwargs):
@@ -20,7 +21,13 @@ def throw_ersilia_exception(func):
             echo(text)
 
             if query_yes_no("Would you like to report this error to Ersilia?"):
-                send_exception_issue(E)
+
+                if query_yes_no("Would you like to include your last Ersilia command in the issue (for issue reproducibility)?"):
+                    sys.stdout.write("Please re-type your last Ersilia command: ")
+                    message = input()
+                    send_exception_issue(E, message)
+                else:
+                    send_exception_issue(E, "")
 
             # if query_yes_no("Would you like to access the log?"):
             #     print("No log info")

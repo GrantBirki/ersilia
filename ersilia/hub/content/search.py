@@ -1,4 +1,5 @@
 """Search for models"""
+from ersilia.utils.exceptions.throw_ersilia_exception import throw_ersilia_exception
 from .catalog import CatalogTable
 import numpy as np
 import re
@@ -15,6 +16,7 @@ class ModelSearcher(object):
     def __init__(self, catalog):
         self.catalog = catalog
 
+    @throw_ersilia_exception
     def levenshtein_ratio_and_distance(self, s, t):
         """Algorithm to fuzzy match strings"""
         # Initialize matrix of zeros
@@ -51,6 +53,7 @@ class ModelSearcher(object):
         Ratio = ((len(s) + len(t)) - distance[row][col]) / (len(s) + len(t))
         return Ratio
 
+    @throw_ersilia_exception
     def search_text(self, s):
         """Search using text and return the closest matching string"""
         idxs = set()
@@ -82,6 +85,7 @@ class ModelSearcher(object):
 
         return CatalogTable(data=R, columns=self.catalog.columns)
 
+    @throw_ersilia_exception
     def search_mode(self, s):
         """searches the mode of training"""
         idxs = set()

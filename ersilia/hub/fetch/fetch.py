@@ -15,7 +15,7 @@ from .actions.content import CardGetter
 from .actions.check import ModelChecker
 from .actions.sniff import ModelSniffer
 
-from ...utils.exceptions import throw_ersilia_exception
+from ...utils.exceptions.throw_ersilia_exception import throw_ersilia_exception
 
 from . import STATUS_FILE, DONE_TAG
 
@@ -90,19 +90,16 @@ class ModelFetcher(ErsiliaBase):
             file.write(str(ts))
             file.write("\n")
 
+    @throw_ersilia_exception
     def fetch(self, model_id):
-        try:
-            self.model_id = model_id
-            self._prepare()
-            self._get()
-            self._pack()
-            self._toolize()
-            self._content()
-            self._check()
-            self._sniff()
-            self._success()
-            # self._fetchtime()
-            logger.info("Fetching {0} done successfully".format(model_id))
-
-        except Exception as E:
-            throw_ersilia_exception.throw_exception(E)
+        self.model_id = model_id
+        self._prepare()
+        self._get()
+        self._pack()
+        self._toolize()
+        self._content()
+        self._check()
+        self._sniff()
+        self._success()
+        # self._fetchtime()
+        logger.info("Fetching {0} done successfully".format(model_id))

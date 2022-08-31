@@ -1,4 +1,4 @@
-from ersilia.utils.exceptions.throw_ersilia_exception import throw_exception
+from ersilia.utils.exceptions.throw_ersilia_exception import throw_ersilia_exception
 from .. import ErsiliaBase
 from ..lake.manager import IsauraManager
 
@@ -15,12 +15,10 @@ class LakeStorer(ErsiliaBase):
             credentials_json=credentials_json,
         )
 
+    @throw_ersilia_exception
     def store(self):
-        try:
-            self.logger.debug("Appeding local to public")
-            self.isaura_manager.append_local_to_public()
-            self.logger.debug("Pushing")
-            self.isaura_manager.push()
+        self.logger.debug("Appeding local to public")
+        self.isaura_manager.append_local_to_public()
+        self.logger.debug("Pushing")
+        self.isaura_manager.push()
             
-        except Exception as E:
-            throw_exception(E)

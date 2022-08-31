@@ -11,7 +11,7 @@ from ...auth.auth import Auth
 from ...default import GITHUB_ORG
 from ... import logger
 
-from ...utils.exceptions.throw_ersilia_exception import throw_exception
+from ...utils.exceptions.throw_ersilia_exception import throw_ersilia_exception
 
 try:
     import webbrowser
@@ -84,120 +84,103 @@ class ModelCatalog(ErsiliaBase):
         if "Mode" in card:
             return card["Mode"]
 
+    @throw_ersilia_exception
     def airtable(self):
-        try:
-            """List models available in AirTable Ersilia Model Hub base"""
-            if webbrowser:  # TODO: explore models online
-                if not self.tabular_view:
-                    webbrowser.open(
-                        "https://airtable.com/shr9sYjL70nnHOUrP/tblZGe2a2XeBxrEHP"
-                    )
-                else:
-                    webbrowser.open("https://airtable.com/shrUcrUnd7jB9ChZV")
+        """List models available in AirTable Ersilia Model Hub base"""
+        if webbrowser:  # TODO: explore models online
+            if not self.tabular_view:
+                webbrowser.open(
+                    "https://airtable.com/shr9sYjL70nnHOUrP/tblZGe2a2XeBxrEHP"
+                )
+            else:
+                webbrowser.open("https://airtable.com/shrUcrUnd7jB9ChZV")
         
-        except Exception as E:
-            throw_exception(E)
-
+    @throw_ersilia_exception
     def github(self):
-        try:
-            """List models available in the GitHub model hub repository"""
-            if Github is None:
-                token = None
-            else:
-                token = Auth().oauth_token()
-            logger.debug(
-                "Looking for model repositories in {0} organization".format(GITHUB_ORG)
-            )
-            if token:
-                g = Github(token)
-                repo_list = [i for i in g.get_user().get_repos()]
-                repos = []
-                for r in repo_list:
-                    owner, name = r.full_name.split("/")
-                    if owner != GITHUB_ORG:
-                        continue
-                    repos += [name]
-            else:
-                repos = []
-                url = "https://api.github.com/users/{0}/repos".format(GITHUB_ORG)
-                results = requests.get(url).json()
-                for r in results:
-                    repos += [r["name"]]
-            models = []
-            for repo in repos:
-                if self._is_eos(repo):
-                    models += [repo]
-            logger.info("Found {0} models".format(len(models)))
-            return models
-        
-        except Exception as E:
-            throw_exception(E)
-
+        """List models available in the GitHub model hub repository"""
+        if Github is None:
+            token = None
+        else:
+            token = Auth().oauth_token()
+        logger.debug(
+            "Looking for model repositories in {0} organization".format(GITHUB_ORG)
+        )
+        if token:
+            g = Github(token)
+            repo_list = [i for i in g.get_user().get_repos()]
+            repos = []
+            for r in repo_list:
+                owner, name = r.full_name.split("/")
+                if owner != GITHUB_ORG:
+                    continue
+                repos += [name]
+        else:
+            repos = []
+            url = "https://api.github.com/users/{0}/repos".format(GITHUB_ORG)
+            results = requests.get(url).json()
+            for r in results:
+                repos += [r["name"]]
+        models = []
+        for repo in repos:
+            if self._is_eos(repo):
+                models += [repo]
+        logger.info("Found {0} models".format(len(models)))
+        return models
+    
+    @throw_ersilia_exception
     def hub(self):
-        try:
-            """List models available in Ersilia model hub repository"""
-            mc = ModelCard()
-            models = self.github()
-            R = []
-            for model_id in models:
-                card = mc.get(model_id)
-                if card is None:
-                    continue
-                slug = self._get_slug(card)
-                title = self._get_title(card)
-                mode = self._get_mode(card)
-                R += [[model_id, slug, title, mode]]
-            return CatalogTable(R, columns=["MODEL_ID", "SLUG", "TITLE", "MODE"])
+        """List models available in Ersilia model hub repository"""
+        mc = ModelCard()
+        models = self.github()
+        R = []
+        for model_id in models:
+            card = mc.get(model_id)
+            if card is None:
+                continue
+            slug = self._get_slug(card)
+            title = self._get_title(card)
+            mode = self._get_mode(card)
+            R += [[model_id, slug, title, mode]]
+        return CatalogTable(R, columns=["MODEL_ID", "SLUG", "TITLE", "MODE"])
         
-        except Exception as E:
-            throw_exception(E)
-
-        
+    @throw_ersilia_exception
     def local(self):
-        try:
+        """List models available locally"""
+        mc = ModelCard()
+        mi = ModelIdentifier()
+        R = []
+        logger.debug("Looking for models in {0}".format(self._bundles_dir))
+        for model_id in os.listdir(self._bundles_dir):
+            if not self._is_eos(model_id):
+                continue
+            card = mc.get(model_id)
+            slug = self._get_slug(card)
+            title = self._get_title(card)
+            mode = self._get_mode(card)
+            R += [[model_id, slug, title, mode]]
+        logger.info("Found {0} models".format(len(R)))
+        return CatalogTable(data=R, columns=["MODEL_ID", "SLUG", "TITLE", "MODE"])
 
-            """List models available locally"""
-            mc = ModelCard()
-            mi = ModelIdentifier()
-            R = []
-            logger.debug("Looking for models in {0}".format(self._bundles_dir))
-            for model_id in os.listdir(self._bundles_dir):
-                if not self._is_eos(model_id):
-                    continue
-                card = mc.get(model_id)
-                slug = self._get_slug(card)
-                title = self._get_title(card)
-                mode = self._get_mode(card)
-                R += [[model_id, slug, title, mode]]
-            logger.info("Found {0} models".format(len(R)))
-            return CatalogTable(data=R, columns=["MODEL_ID", "SLUG", "TITLE", "MODE"])
-
-        except Exception as E:
-            throw_exception(E)
-
+    @throw_ersilia_exception
     def bentoml(self):
-        try: 
-            """List models available as BentoServices"""
-            result = subprocess.run(
-                ["bentoml", "list"], stdout=subprocess.PIPE, env=os.environ
-            )
-            result = [r for r in result.stdout.decode("utf-8").split("\n") if r]
-            if len(result) == 1:
-                return
-            columns = ["BENTO_SERVICE", "AGE", "APIS", "ARTIFACTS"]
-            header = result[0]
-            values = result[1:]
-            cut_idxs = []
-            for col in columns:
-                cut_idxs += [header.find(col)]
-            R = []
-            for row in values:
-                r = []
-                for i, idx in enumerate(zip(cut_idxs, cut_idxs[1:] + [None])):
-                    r += [row[idx[0] : idx[1]].rstrip()]
-                R += [[r[0].split(":")[0]] + r]
-            columns = ["MODEL_ID"] + columns
-            return CatalogTable(data=R, columns=columns)
-
-        except Exception as E:
-            throw_exception(E)
+        """List models available as BentoServices"""
+        result = subprocess.run(
+            ["bentoml", "list"], stdout=subprocess.PIPE, env=os.environ
+        )
+        result = [r for r in result.stdout.decode("utf-8").split("\n") if r]
+        if len(result) == 1:
+            return
+        columns = ["BENTO_SERVICE", "AGE", "APIS", "ARTIFACTS"]
+        header = result[0]
+        values = result[1:]
+        cut_idxs = []
+        for col in columns:
+            cut_idxs += [header.find(col)]
+        R = []
+        for row in values:
+            r = []
+            for i, idx in enumerate(zip(cut_idxs, cut_idxs[1:] + [None])):
+                r += [row[idx[0] : idx[1]].rstrip()]
+            R += [[r[0].split(":")[0]] + r]
+        columns = ["MODEL_ID"] + columns
+        return CatalogTable(data=R, columns=columns)

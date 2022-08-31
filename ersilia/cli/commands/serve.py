@@ -1,5 +1,7 @@
 import click
 import os
+
+from ersilia.utils.exceptions.throw_ersilia_exception import throw_ersilia_exception
 from ...utils import tmp_pid_file
 from . import ersilia_cli
 from .. import echo
@@ -13,6 +15,7 @@ def serve_cmd():
     @click.argument("model", type=click.STRING)
     @click.option("--lake/--no-lake", is_flag=True, default=True)
     @click.option("--docker/--no-docker", is_flag=True, default=False)
+    @throw_ersilia_exception
     def serve(model, lake, docker):
         if docker:
             service_class = "docker"

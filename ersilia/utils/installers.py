@@ -2,8 +2,7 @@ import shutil
 import os
 import sys
 import tempfile
-
-from utils.exceptions.throw_ersilia_exception import throw_exception
+from ersilia.utils.exceptions.throw_ersilia_exception import throw_ersilia_exception
 from .conda import SimpleConda
 from ..default import EOS, CONFIG_JSON
 from .. import ErsiliaBase
@@ -285,38 +284,31 @@ class Uninstaller(BaseInstaller):
         if docker.exists(org, img, tag):
             docker.delete(org, img, tag)
 
-
+@throw_ersilia_exception
 def base_installer(ignore_status=False):
-    try:
-        """The base installer does a bare minimum installation of dependencies.
-        It is mainly used to make a base environment for the models."""
-        status = check_install_status()
-        if status["status"] is None or ignore_status:
-            ins = Installer(check_install_log=False)
-            ins.rdkit()
-            ins.config()
-            with open(status["install_status_file"], "w") as f:
-                f.write("base")
+    """The base installer does a bare minimum installation of dependencies.
+    It is mainly used to make a base environment for the models."""
+    status = check_install_status()
+    if status["status"] is None or ignore_status:
+        ins = Installer(check_install_log=False)
+        ins.rdkit()
+        ins.config()
+        with open(status["install_status_file"], "w") as f:
+            f.write("base")
     
-    except Exception as E:
-        throw_exception(E)
 
-
+@throw_ersilia_exception
 def full_installer(ignore_status=False):
-    try:
-        """The full installer does all the installations necessary to run ersila."""
-        status = check_install_status()
-        if status["status"] != "full" or ignore_status:
-            ins = Installer()
-            ins.profile()
-            ins.conda()
-            ins.git()
-            ins.rdkit()
-            ins.config()
-            ins.base_conda()
-            ins.server_docker()
-            with open(status["install_status_file"], "w") as f:
-                f.write("full")
-    
-    except Exception as E:
-        throw_exception(E)
+    """The full installer does all the installations necessary to run ersila."""
+    status = check_install_status()
+    if status["status"] != "full" or ignore_status:
+        ins = Installer()
+        ins.profile()
+        ins.conda()
+        ins.git()
+        ins.rdkit()
+        ins.config()
+        ins.base_conda()
+        ins.server_docker()
+        with open(status["install_status_file"], "w") as f:
+            f.write("full")
