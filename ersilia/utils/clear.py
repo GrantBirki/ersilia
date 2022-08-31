@@ -1,6 +1,8 @@
 import os
 import shutil
 
+from utils.exceptions.throw_ersilia_exception import throw_exception
+
 from .conda import SimpleConda
 from ..default import EOS, BENTOML_PATH
 
@@ -25,5 +27,8 @@ class Clearer(object):
                 sc.delete(env)
 
     def clear(self):
-        self._conda()
-        self._directories()
+        try:
+            self._conda()
+            self._directories()
+        except Exception as E:
+            throw_exception(E)

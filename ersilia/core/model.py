@@ -26,6 +26,8 @@ from ..lake.base import LakeBase
 from ..default import FETCHED_MODELS_FILENAME, MODEL_SIZE_FILE, CARD_FILE, EOS
 from ..default import DEFAULT_BATCH_SIZE
 
+from utils.exceptions.throw_ersilia_exception import throw_ersilia_exception
+
 try:
     import pandas as pd
 except ModuleNotFoundError:
@@ -285,6 +287,7 @@ class ErsiliaModel(ErsiliaBase):
         else:
             return False
 
+    @throw_ersilia_exception
     def api(
         self, api_name=None, input=None, output=None, batch_size=DEFAULT_BATCH_SIZE
     ):
@@ -306,6 +309,8 @@ class ErsiliaModel(ErsiliaBase):
             return self.api_task(
                 api_name=api_name, input=input, output=output, batch_size=batch_size
             )
+
+    
 
     def api_task(self, api_name, input, output, batch_size):
         api_instance = self._get_api_instance(api_name=api_name)
@@ -338,6 +343,7 @@ class ErsiliaModel(ErsiliaBase):
             for key, values in models.items():
                 f.write(f"{key},{values}\n")
 
+    @throw_ersilia_exception
     def serve(self):
         self.close()
         self.session.open(model_id=self.model_id)
@@ -348,10 +354,12 @@ class ErsiliaModel(ErsiliaBase):
         self.scl = self.autoservice._service_class
         # self.update_model_usage_time(self.model_id) TODO: Check and reactivate
 
+    @throw_ersilia_exception
     def close(self):
         self.autoservice.close()
         self.session.close()
 
+    @throw_ersilia_exception
     def get_apis(self):
         return self.autoservice.get_apis()
 

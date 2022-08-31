@@ -1,6 +1,7 @@
 """See available models in the Ersilia Model Hub"""
 
 import subprocess
+from tkinter import E
 import requests
 import os
 from .card import ModelCard
@@ -10,9 +11,7 @@ from ...auth.auth import Auth
 from ...default import GITHUB_ORG
 from ... import logger
 
-from .. import echo
-from ...utils.cli_query import query_yes_no
-from ...utils.exceptions.email_reporting import send_exception_report_email
+from ...utils.exceptions.throw_ersilia_exception import throw_exception
 
 try:
     import webbrowser
@@ -86,45 +85,53 @@ class ModelCatalog(ErsiliaBase):
             return card["Mode"]
 
     def airtable(self):
-        """List models available in AirTable Ersilia Model Hub base"""
-        if webbrowser:  # TODO: explore models online
-            if not self.tabular_view:
-                webbrowser.open(
-                    "https://airtable.com/shr9sYjL70nnHOUrP/tblZGe2a2XeBxrEHP"
-                )
-            else:
-                webbrowser.open("https://airtable.com/shrUcrUnd7jB9ChZV")
+        try:
+            """List models available in AirTable Ersilia Model Hub base"""
+            if webbrowser:  # TODO: explore models online
+                if not self.tabular_view:
+                    webbrowser.open(
+                        "https://airtable.com/shr9sYjL70nnHOUrP/tblZGe2a2XeBxrEHP"
+                    )
+                else:
+                    webbrowser.open("https://airtable.com/shrUcrUnd7jB9ChZV")
+        
+        except Exception as E:
+            throw_exception(E)
 
     def github(self):
-        """List models available in the GitHub model hub repository"""
-        if Github is None:
-            token = None
-        else:
-            token = Auth().oauth_token()
-        logger.debug(
-            "Looking for model repositories in {0} organization".format(GITHUB_ORG)
-        )
-        if token:
-            g = Github(token)
-            repo_list = [i for i in g.get_user().get_repos()]
-            repos = []
-            for r in repo_list:
-                owner, name = r.full_name.split("/")
-                if owner != GITHUB_ORG:
-                    continue
-                repos += [name]
-        else:
-            repos = []
-            url = "https://api.github.com/users/{0}/repos".format(GITHUB_ORG)
-            results = requests.get(url).json()
-            for r in results:
-                repos += [r["name"]]
-        models = []
-        for repo in repos:
-            if self._is_eos(repo):
-                models += [repo]
-        logger.info("Found {0} models".format(len(models)))
-        return models
+        try:
+            """List models available in the GitHub model hub repository"""
+            if Github is None:
+                token = None
+            else:
+                token = Auth().oauth_token()
+            logger.debug(
+                "Looking for model repositories in {0} organization".format(GITHUB_ORG)
+            )
+            if token:
+                g = Github(token)
+                repo_list = [i for i in g.get_user().get_repos()]
+                repos = []
+                for r in repo_list:
+                    owner, name = r.full_name.split("/")
+                    if owner != GITHUB_ORG:
+                        continue
+                    repos += [name]
+            else:
+                repos = []
+                url = "https://api.github.com/users/{0}/repos".format(GITHUB_ORG)
+                results = requests.get(url).json()
+                for r in results:
+                    repos += [r["name"]]
+            models = []
+            for repo in repos:
+                if self._is_eos(repo):
+                    models += [repo]
+            logger.info("Found {0} models".format(len(models)))
+            return models
+        
+        except Exception as E:
+            throw_exception(E)
 
     def hub(self):
         try:
@@ -143,24 +150,7 @@ class ModelCatalog(ErsiliaBase):
             return CatalogTable(R, columns=["MODEL_ID", "SLUG", "TITLE", "MODE"])
         
         except Exception as E:
-            text = ":triangular_flag: Something went wrong with Ersilia...\n\n"
-            text += "{}\n\n".format(self.__class__.__name__)
-            echo(text)
-            echo("Error message:\n")
-            echo(":prohibited: " + str(E), fg="red")
-            text = "If this error message is not helpful, open an issue at:\n"
-            text += " - https://github.com/ersilia-os/ersilia\n"
-            text += "Or feel free to reach out to us at:\n"
-            text += " - hello[at]ersilia.io\n\n"
-            text += "If you haven't, try to run your command in verbose mode (-v in the CLI)\n\n"
-            echo(text)
-        
-            if query_yes_no("Would you like to report this error to Ersilia?"):
-                send_exception_report_email(E)
-
-            # # TODO: add access to log information
-            # if query_yes_no("Would you like to access the log?"):
-            #     print("No log info")
+            throw_exception(E)
 
         
     def local(self):
@@ -183,24 +173,7 @@ class ModelCatalog(ErsiliaBase):
             return CatalogTable(data=R, columns=["MODEL_ID", "SLUG", "TITLE", "MODE"])
 
         except Exception as E:
-            text = ":triangular_flag: Something went wrong with Ersilia...\n\n"
-            text += "{}\n\n".format(self.__class__.__name__)
-            echo(text)
-            echo("Error message:\n")
-            echo(":prohibited: " + str(E), fg="red")
-            text = "If this error message is not helpful, open an issue at:\n"
-            text += " - https://github.com/ersilia-os/ersilia\n"
-            text += "Or feel free to reach out to us at:\n"
-            text += " - hello[at]ersilia.io\n\n"
-            text += "If you haven't, try to run your command in verbose mode (-v in the CLI)\n\n"
-            echo(text)
-        
-            if query_yes_no("Would you like to report this error to Ersilia?"):
-                send_exception_report_email(E)
-
-            # # TODO: add access to log information
-            # if query_yes_no("Would you like to access the log?"):
-            #     print("No log info")
+            throw_exception(E)
 
     def bentoml(self):
         try: 
@@ -227,21 +200,4 @@ class ModelCatalog(ErsiliaBase):
             return CatalogTable(data=R, columns=columns)
 
         except Exception as E:
-            text = ":triangular_flag: Something went wrong with Ersilia...\n\n"
-            text += "{}\n\n".format(self.__class__.__name__)
-            echo(text)
-            echo("Error message:\n")
-            echo(":prohibited: " + str(E), fg="red")
-            text = "If this error message is not helpful, open an issue at:\n"
-            text += " - https://github.com/ersilia-os/ersilia\n"
-            text += "Or feel free to reach out to us at:\n"
-            text += " - hello[at]ersilia.io\n\n"
-            text += "If you haven't, try to run your command in verbose mode (-v in the CLI)\n\n"
-            echo(text)
-        
-            if query_yes_no("Would you like to report this error to Ersilia?"):
-                send_exception_report_email(E)
-
-            # # TODO: add access to log information
-            # if query_yes_no("Would you like to access the log?"):
-            #     print("No log info")
+            throw_exception(E)

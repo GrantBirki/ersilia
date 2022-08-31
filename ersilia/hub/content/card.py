@@ -8,9 +8,7 @@ from ... import ErsiliaBase
 from ...utils.terminal import run_command
 from ...auth.auth import Auth
 
-from .. import echo
-from ...utils.cli_query import query_yes_no
-from ...utils.exceptions.email_reporting import send_exception_report_email
+from ...utils.exceptions.throw_ersilia_exception import throw_exception
 
 
 try:
@@ -100,7 +98,10 @@ class ReadmeCard(ErsiliaBase):
         return results
 
     def get(self, model_id):
-        return self.parse(model_id)
+        try:
+            return self.parse(model_id)
+        except Exception as E:
+            throw_exception(E)
 
 
 class AirtableCard(ErsiliaBase):
@@ -136,22 +137,28 @@ class AirtableCard(ErsiliaBase):
         return self._find_card(mode, "Mode")
 
     def get(self, model_id):
-        return self.find_card_by_model_id(model_id)
-
+        try:
+            return self.find_card_by_model_id(model_id)
+        except Exception as E:
+            throw_exception(E)
 
 class LocalCard(ErsiliaBase):
     def __init__(self, config_json):
         ErsiliaBase.__init__(self, config_json=config_json)
 
     def get(self, model_id):
-        model_path = self._model_path(model_id)
-        card_path = os.path.join(model_path, CARD_FILE)
-        if os.path.exists(card_path):
-            with open(card_path, "r") as f:
-                card = json.load(f)
-            return card
-        else:
-            return None
+        try:
+            model_path = self._model_path(model_id)
+            card_path = os.path.join(model_path, CARD_FILE)
+            if os.path.exists(card_path):
+                with open(card_path, "r") as f:
+                    card = json.load(f)
+                return card
+            else:
+                return None
+        
+        except Exception as E:
+            throw_exception(E)
 
 
 class LakeCard(ErsiliaBase):
@@ -170,24 +177,7 @@ class LakeCard(ErsiliaBase):
                 return card
 
         except Exception as E:
-            text = ":triangular_flag: Something went wrong with Ersilia...\n\n"
-            text += "{}\n\n".format(self.__class__.__name__)
-            echo(text)
-            echo("Error message:\n")
-            echo(":prohibited: " + str(E), fg="red")
-            text = "If this error message is not helpful, open an issue at:\n"
-            text += " - https://github.com/ersilia-os/ersilia\n"
-            text += "Or feel free to reach out to us at:\n"
-            text += " - hello[at]ersilia.io\n\n"
-            text += "If you haven't, try to run your command in verbose mode (-v in the CLI)\n\n"
-            echo(text)
-        
-            if query_yes_no("Would you like to report this error to Ersilia?"):
-                send_exception_report_email(E)
-
-            # # TODO: add access to log information
-            # if query_yes_no("Would you like to access the log?"):
-            #     print("No log info")
+            throw_exception(E)
 
 
 class ModelCard(object):
@@ -219,21 +209,4 @@ class ModelCard(object):
                 return card
 
         except Exception as E:
-            text = ":triangular_flag: Something went wrong with Ersilia...\n\n"
-            text += "{}\n\n".format(self.__class__.__name__)
-            echo(text)
-            echo("Error message:\n")
-            echo(":prohibited: " + str(E), fg="red")
-            text = "If this error message is not helpful, open an issue at:\n"
-            text += " - https://github.com/ersilia-os/ersilia\n"
-            text += "Or feel free to reach out to us at:\n"
-            text += " - hello[at]ersilia.io\n\n"
-            text += "If you haven't, try to run your command in verbose mode (-v in the CLI)\n\n"
-            echo(text)
-        
-            if query_yes_no("Would you like to report this error to Ersilia?"):
-                send_exception_report_email(E)
-
-            # # TODO: add access to log information
-            # if query_yes_no("Would you like to access the log?"):
-            #     print("No log info")
+            throw_exception(E)

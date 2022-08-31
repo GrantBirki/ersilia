@@ -1,6 +1,8 @@
 import os
 import shutil
 
+from ..utils.exceptions.throw_ersilia_exception import throw_ersilia_exception
+
 from .rebase import TemplateRebaser
 from . import EOS_TEMPLATE_REPOSITORY
 
@@ -23,6 +25,7 @@ class ModelPublisher(ErsiliaBase):
         self.repo_path = os.path.join(self.cwd, self.model_id)
         self.message = "Commit from Ersilia"
 
+    @throw_ersilia_exception
     def rebase(self):
         rb = TemplateRebaser(
             model_id=self.model_id,
@@ -40,6 +43,8 @@ class ModelPublisher(ErsiliaBase):
         rb.clean()
         self.message = "Rebased from template {0}".format(self.template_repo)
 
+
+    @throw_ersilia_exception
     def create(self, public=True):
         if public:
             flag = "--public"
@@ -58,12 +63,14 @@ class ModelPublisher(ErsiliaBase):
         )
         self.message = "Initial commit"
 
+    @throw_ersilia_exception
     def dvc(self):
         dvc = DVCSetup(local_repo_path=self.repo_path, model_id=self.model_id)
         dvc.gdrive_setup()
         dvc.set_dvc_gdrive()
         dvc.git_add_and_commit()
-
+       
+    @throw_ersilia_exception
     def git_push(self, message=None):
         if not message:
             message = self.message
@@ -74,9 +81,11 @@ class ModelPublisher(ErsiliaBase):
         run_command("git push")
         os.chdir(self.cwd)
 
+    @throw_ersilia_exception
     def push(self):
         self.dvc()
         self.git_push()
+        
 
     def test(self):
         pass

@@ -1,6 +1,8 @@
 import os
 import shutil
 import os.path
+
+from ...utils.exceptions.throw_ersilia_exception import throw_exception
 from ... import ErsiliaBase
 from ...utils.terminal import run_command
 from ...utils.environment import Environment
@@ -233,15 +235,18 @@ class ModelFullDeleter(ErsiliaBase):
         return False
 
     def delete(self, model_id):
-        self.logger.info("Starting delete of model {0}".format(model_id))
-        ModelEosDeleter(self.config_json).delete(model_id)
-        ModelSlugDeleter(self.config_json).delete(model_id)
-        ModelBundleDeleter(self.config_json).delete(model_id)
-        ModelBentoDeleter(self.config_json).delete(model_id)
-        ModelCondaDeleter(self.config_json).delete(model_id)
-        ModelTmpDeleter(self.config_json).delete(model_id)
-        ModelLakeDeleter(self.config_json).delete(model_id)
-        ModelPipDeleter(self.config_json).delete(model_id)
-        ModelDockerDeleter(self.config_json).delete(model_id)
-        ModelFetchedEntryDeleter(self.config_json).delete(model_id)
-        self.logger.success("Model {0} deleted successfully".format(model_id))
+        try:
+            self.logger.info("Starting delete of model {0}".format(model_id))
+            ModelEosDeleter(self.config_json).delete(model_id)
+            ModelSlugDeleter(self.config_json).delete(model_id)
+            ModelBundleDeleter(self.config_json).delete(model_id)
+            ModelBentoDeleter(self.config_json).delete(model_id)
+            ModelCondaDeleter(self.config_json).delete(model_id)
+            ModelTmpDeleter(self.config_json).delete(model_id)
+            ModelLakeDeleter(self.config_json).delete(model_id)
+            ModelPipDeleter(self.config_json).delete(model_id)
+            ModelDockerDeleter(self.config_json).delete(model_id)
+            ModelFetchedEntryDeleter(self.config_json).delete(model_id)
+            self.logger.success("Model {0} deleted successfully".format(model_id))
+        except Exception as E:
+            throw_exception(E)

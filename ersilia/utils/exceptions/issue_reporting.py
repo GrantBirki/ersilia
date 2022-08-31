@@ -9,7 +9,7 @@ REPO_OWNER = "azycn"
 REPO_NAME = "alice.github.io"
 AUTH_TOKEN = None
 
-def send_exception_report_email(E: Exception):
+def send_exception_issue(E: Exception):
 
     subprocess.run(['gh', 'auth', 'login']) # user login
     auth_out = subprocess.run(['gh', 'auth', 'status', '-t'], capture_output=True) # retrieve user's auth token

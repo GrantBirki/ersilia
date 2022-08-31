@@ -4,6 +4,8 @@ import csv
 import importlib
 import itertools
 
+from ersilia.utils.exceptions.throw_ersilia_exception import throw_exception
+
 from .readers.file import TabularFileReader
 from ..hub.content.card import ModelCard
 from .. import ErsiliaBase
@@ -119,27 +121,31 @@ class ExampleGenerator(object):
             return ","
 
     def example(self, n_samples, file_name, simple):
-        if file_name is None:
-            data = [v for v in self.IO.example(n_samples)]
-            if simple:
-                data = [d["input"] for d in data]
-            return data
-        else:
-            extension = file_name.split(".")[-1]
-            if extension == "json":
-                with open(file_name, "w") as f:
-                    data = [v for v in self.IO.example(n_samples)]
-                    if simple:
-                        data = [d["input"] for d in data]
-                    json.dump(data, f, indent=4)
+        try:
+            if file_name is None:
+                data = [v for v in self.IO.example(n_samples)]
+                if simple:
+                    data = [d["input"] for d in data]
+                return data
             else:
-                delimiter = self._get_delimiter(file_name)
-                with open(file_name, "w", newline="") as f:
-                    writer = csv.writer(f, delimiter=delimiter)
-                    if simple:
-                        for v in self.IO.example(n_samples):
-                            writer.writerow([v["input"]])
-                    else:
-                        writer.writerow(["key", "input", "text"])
-                        for v in self.IO.example(n_samples):
-                            writer.writerow([v["key"], v["input"], v["text"]])
+                extension = file_name.split(".")[-1]
+                if extension == "json":
+                    with open(file_name, "w") as f:
+                        data = [v for v in self.IO.example(n_samples)]
+                        if simple:
+                            data = [d["input"] for d in data]
+                        json.dump(data, f, indent=4)
+                else:
+                    delimiter = self._get_delimiter(file_name)
+                    with open(file_name, "w", newline="") as f:
+                        writer = csv.writer(f, delimiter=delimiter)
+                        if simple:
+                            for v in self.IO.example(n_samples):
+                                writer.writerow([v["input"]])
+                        else:       
+                            writer.writerow(["key", "input", "text"])
+                            for v in self.IO.example(n_samples):
+                                writer.writerow([v["key"], v["input"], v["text"]])
+        
+        except Exception as E:
+            throw_exception(E)
